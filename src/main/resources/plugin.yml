@@ -1,0 +1,9 @@
+name: ${project.name}
+version: ${project.version}
+main: net.azisaba.lgw.lgwneolobby.LeonGunWarNeoLobby
+description: ${project.description}
+author: ${project.organization.name}
+
+commands:
+  test:
+    usage: /test
