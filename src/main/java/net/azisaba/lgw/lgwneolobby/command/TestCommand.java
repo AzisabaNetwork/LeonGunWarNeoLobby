@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import net.azisaba.lgw.lgwneolobby.LeonGunWarNeoLobby;
 import net.azisaba.lgw.lgwneolobby.match.MatchInfo;
 import net.azisaba.lgw.lgwneolobby.util.Chat;
-import net.azisaba.lgw.lgwneolobby.util.ServerTransferUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -42,15 +41,21 @@ public class TestCommand implements CommandExecutor {
 
       String matchId = args[1];
       Optional<MatchInfo> match = plugin.getMatchInfoOrganizer().getMatch(matchId);
-      match.ifPresent(
-          info -> ServerTransferUtils.sendToServer((Player) sender,
-              info.getProxyRegisteredServerName()));
-
       if (!match.isPresent()) {
         sender.sendMessage(Chat.f("&c該当するマッチが見つかりませんでした"));
+        return true;
       }
+
+      Player p = (Player) sender;
+
+      MatchInfo matchInfo = match.get();
+      plugin.getMatchJoinRequestHandler()
+          .requestToJoin(plugin.getPartyController().getPartyOf(p.getUniqueId()),
+              matchInfo.getMatchId());
+      sender.sendMessage(Chat.f("&e試合に参加しています..."));
       return true;
     }
+
     return true;
   }
 }

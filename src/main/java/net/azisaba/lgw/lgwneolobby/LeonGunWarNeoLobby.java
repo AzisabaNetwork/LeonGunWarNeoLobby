@@ -6,8 +6,13 @@ import lombok.Getter;
 import net.azisaba.lgw.lgwneolobby.command.TestCommand;
 import net.azisaba.lgw.lgwneolobby.config.LeonGunWarNeoLobbyConfig;
 import net.azisaba.lgw.lgwneolobby.match.MatchInfoOrganizer;
+import net.azisaba.lgw.lgwneolobby.match.MatchJoinRequestHandler;
+import net.azisaba.lgw.lgwneolobby.party.PartyController;
 import net.azisaba.lgw.lgwneolobby.redis.ServerIdDefiner;
 import net.azisaba.lgw.lgwneolobby.redis.data.RedisConnectionData;
+import net.azisaba.lgw.lgwneolobby.redis.data.RedisKeys;
+import net.azisaba.lgw.lgwneolobby.redis.pubsub.MatchJoinRequestResponseSubscriber;
+import net.azisaba.lgw.lgwneolobby.redis.pubsub.PubSubHandler;
 import net.azisaba.lgw.lgwneolobby.sql.MySQLConnector;
 import net.azisaba.lgw.lgwneolobby.taskchain.BukkitTaskChainFactory;
 import net.azisaba.lgw.lgwneolobby.util.ServerTransferUtils;
@@ -25,6 +30,11 @@ public class LeonGunWarNeoLobby extends JavaPlugin {
 
   private MySQLConnector mySQLConnector;
   private ServerIdDefiner serverIdDefiner;
+  private PubSubHandler pubSubHandler;
+
+  private MatchJoinRequestHandler matchJoinRequestHandler;
+
+  private final PartyController partyController = new PartyController();
 
   private MatchInfoOrganizer matchInfoOrganizer;
 
@@ -48,8 +58,14 @@ public class LeonGunWarNeoLobby extends JavaPlugin {
 
     serverIdDefiner = new ServerIdDefiner(jedisPool);
 
+    pubSubHandler = new PubSubHandler(jedisPool);
+    pubSubHandler.startSubscribe(new MatchJoinRequestResponseSubscriber(this),
+        RedisKeys.MATCH_JOIN_REQUEST_PREFIX + "response");
+
     matchInfoOrganizer = new MatchInfoOrganizer(this, jedisPool);
     matchInfoOrganizer.runTask();
+
+    matchJoinRequestHandler = new MatchJoinRequestHandler(this, jedisPool);
 
     Bukkit.getPluginCommand("test").setExecutor(new TestCommand(this));
 
@@ -60,6 +76,9 @@ public class LeonGunWarNeoLobby extends JavaPlugin {
   public void onDisable() {
     if (matchInfoOrganizer != null) {
       matchInfoOrganizer.stopTask();
+    }
+    if (pubSubHandler != null) {
+      pubSubHandler.unsubscribeAll();
     }
 
     Bukkit.getLogger().info(getName() + " disabled.");
