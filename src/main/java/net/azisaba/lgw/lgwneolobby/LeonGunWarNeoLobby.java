@@ -8,6 +8,7 @@ import net.azisaba.lgw.lgwneolobby.config.LeonGunWarNeoLobbyConfig;
 import net.azisaba.lgw.lgwneolobby.match.MatchInfoOrganizer;
 import net.azisaba.lgw.lgwneolobby.match.MatchJoinRequestHandler;
 import net.azisaba.lgw.lgwneolobby.party.PartyController;
+import net.azisaba.lgw.lgwneolobby.redis.LobbyServerNameRegister;
 import net.azisaba.lgw.lgwneolobby.redis.ServerIdDefiner;
 import net.azisaba.lgw.lgwneolobby.redis.data.RedisConnectionData;
 import net.azisaba.lgw.lgwneolobby.redis.data.RedisKeys;
@@ -31,6 +32,7 @@ public class LeonGunWarNeoLobby extends JavaPlugin {
   private MySQLConnector mySQLConnector;
   private ServerIdDefiner serverIdDefiner;
   private PubSubHandler pubSubHandler;
+  private LobbyServerNameRegister lobbyServerNameRegister;
 
   private MatchJoinRequestHandler matchJoinRequestHandler;
 
@@ -57,6 +59,9 @@ public class LeonGunWarNeoLobby extends JavaPlugin {
     ServerTransferUtils.init(this);
 
     serverIdDefiner = new ServerIdDefiner(jedisPool);
+    serverIdDefiner.define();
+    lobbyServerNameRegister = new LobbyServerNameRegister(this, jedisPool);
+    lobbyServerNameRegister.register();
 
     pubSubHandler = new PubSubHandler(jedisPool);
     pubSubHandler.startSubscribe(new MatchJoinRequestResponseSubscriber(this),

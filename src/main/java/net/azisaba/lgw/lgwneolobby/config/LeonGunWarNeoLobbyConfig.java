@@ -16,6 +16,8 @@ public class LeonGunWarNeoLobbyConfig {
   private RedisConnectionData redisConnectionData;
   private MySQLConnectionData mySQLConnectionData;
 
+  private String proxyRegisteredServerName;
+
   /**
    * Configを読み込みます
    *
@@ -50,6 +52,8 @@ public class LeonGunWarNeoLobbyConfig {
     mySQLConnectionData =
         new MySQLConnectionData(
             mySQLHostname, mySQLPort, mySQLUsername, mySQLPassword, mySQLDatabase);
+
+    proxyRegisteredServerName = conf.getString("server-name");
     return this;
   }
 }
