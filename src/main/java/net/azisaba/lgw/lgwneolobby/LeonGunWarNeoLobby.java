@@ -60,6 +60,8 @@ public class LeonGunWarNeoLobby extends JavaPlugin {
 
     serverIdDefiner = new ServerIdDefiner(jedisPool);
     serverIdDefiner.define();
+    serverIdDefiner.runKeepServerUniqueIdTask(this);
+    
     lobbyServerNameRegister = new LobbyServerNameRegister(this, jedisPool);
     lobbyServerNameRegister.register();
 
